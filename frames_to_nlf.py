@@ -50,7 +50,7 @@ def post_frame(
 def main():
     ap = argparse.ArgumentParser(description="Extract NLF params per frame via FastAPI /analyze_frame")
     ap.add_argument("--video", required=True, help="Input video path (mp4/mov/etc.)")
-    ap.add_argument("--api", default="http://127.0.0.1:8080/analyze_frame", help="Analyze endpoint URL")
+    ap.add_argument("--api", default="http://127.0.0.1:8080/analyze", help="Analyze endpoint URL")
     ap.add_argument("--out", required=True, help="Output JSONL path, e.g. out_nlf.jsonl")
     ap.add_argument("--every-n", type=int, default=1, help="Process every Nth frame (default: 1 = all frames)")
     ap.add_argument("--start", type=int, default=0, help="Start frame index (default: 0)")
