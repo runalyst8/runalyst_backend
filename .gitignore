@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.sqlite3
+.env
+.env.*
+
+# Virtual envs
+user-auth-backend/venv/
+user-auth-backend/.venv/
+venv/
+.venv/
+
+# Env Variables
+
+user-auth-backend/env/
+user-auth-backend/.env/
+env/
+.env/
+
+# IDE
+.vscode/
+.idea/
