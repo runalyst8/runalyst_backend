@@ -83,7 +83,7 @@ for _p in [_HERE, os.path.join(_HERE, '..', 'uploads')]:
 
 # reuse helpers already defined in pelvis_analysis.py — no duplication
 from pelvis_analysis import load_jsonl, smooth, label_peaks_lr
-from new_strike_analysis  import compute_strike_metrics
+from strike_analysis  import compute_strike_metrics
 
 FPS           = 64.0
 PELVIS        = 0
