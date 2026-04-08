@@ -113,10 +113,6 @@ def compute_forward_trunk_lean(
     first_x = frames[0]["joints_3d"][0][0][pelvis_idx][0]
     last_x  = frames[-1]["joints_3d"][0][0][pelvis_idx][0]
     run_dir = +1 if last_x > first_x else -1
-    print(f"  Running direction : {'+ X' if run_dir == 1 else '- X'}  "
-          f"(pelvis X: {first_x:.1f} -> {last_x:.1f})")
-    print(f"  Forward lean sign : neck.x {'>' if run_dir == 1 else '<'} "
-          f"pelvis.x = positive angle")
 
     selected      = frames[::frame_step]
     frame_indices = np.array([f["frame_index"] for f in selected])
@@ -232,25 +228,6 @@ def analyze_forward_trunk_lean(
     ml, sl, nil, xl  = stats(lower_angles)
     mu, su, niu, xu  = stats(upper_angles)
 
-    sep = '-' * 68
-    print(f"\n{'=' * 68}")
-    print(f"  FORWARD TRUNK LEAN  --  {label}")
-    print(f"{'=' * 68}")
-    print(f"  File        : {path}")
-    print(f"  Total frames: {len(frames)}  |  Used: {len(frame_indices)}  "
-          f"(step={frame_step})")
-    print(f"  FPS         : {fps}  |  Duration: {frames[-1]['frame_index']/fps:.2f} s")
-    print(f"  {sep}")
-    print(f"  {'Segment':<26}  {'Mean':>8}  {'Std':>7}  {'Min':>8}  {'Max':>8}")
-    print(f"  {sep}")
-    print(f"  {'Global  (Pelvis->Neck)':<26}  {mg:>+8.2f}  {sg:>7.2f}  "
-          f"{ning:>+8.2f}  {xg:>+8.2f}")
-    print(f"  {'Lower   (Pelvis->Spine2)':<26}  {ml:>+8.2f}  {sl:>7.2f}  "
-          f"{nil:>+8.2f}  {xl:>+8.2f}")
-    print(f"  {'Upper   (Spine2->Neck)':<26}  {mu:>+8.2f}  {su:>7.2f}  "
-          f"{niu:>+8.2f}  {xu:>+8.2f}")
-    print(f"  {sep}")
-
     # Interpret the dominant pattern
     if ml > mu + 2:
         pattern = "lean driven from hip/pelvis -- lower segment dominates (good)"
@@ -258,9 +235,6 @@ def analyze_forward_trunk_lean(
         pattern = "lean driven from thoracic rounding -- upper segment dominates"
     else:
         pattern = "lean distributed evenly across the whole spine"
-    print(f"  Pattern : {pattern}")
-    print(f"  {sep}")
-    print(f"  Reference: elite global lean ~5-8 deg at midstance")
 
     if plot:
         plot_trunk_lean(
@@ -276,6 +250,7 @@ def analyze_forward_trunk_lean(
         mean_global=mg, std_global=sg, min_global=ning, max_global=xg,
         mean_lower=ml,  std_lower=sl,  min_lower=nil,   max_lower=xl,
         mean_upper=mu,  std_upper=su,  min_upper=niu,   max_upper=xu,
+        pattern=pattern,
     )
 
 

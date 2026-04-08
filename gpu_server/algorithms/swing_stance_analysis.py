@@ -212,7 +212,7 @@ def calculate_flight_metrics(left_vx, right_vx, timestamps):
     return results
 
 
-def plot_ankle_x(filepath):
+def plot_ankle_x(filepath, save_path=None):
     """Plot X coordinates over time for both ankles."""
     frames = load_nlf(filepath)
     fn = os.path.basename(filepath)
@@ -280,36 +280,12 @@ def plot_ankle_x(filepath):
     ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.show()
+    if save_path:
+        fig.savefig(save_path, dpi=200, bbox_inches='tight')
+    plt.close(fig)
     
     # Havada kalma metriklerini hesapla
     flight_metrics = calculate_flight_metrics(left_vx_clean, right_vx_clean, timestamps)
-    
-    # Sonuçları yazdır
-    print("\n" + "="*60)
-    print("GAIT CYCLE BAZINDA HAVADA KALMA ANALİZİ")
-    print("="*60)
-    
-    print("\n--- Sol Ayak Bazlı Cycle'lar ---")
-    for i, cycle in enumerate(flight_metrics['left_foot_cycles']):
-        print(f"  Cycle {i+1}: {cycle['start_time']:.2f}s - {cycle['end_time']:.2f}s ({cycle['cycle_frames']} frame)")
-        print(f"    Sol ayak havada: {cycle['left_flight_pct']:.1f}%")
-        print(f"    Sağ ayak havada: {cycle['right_flight_pct']:.1f}%")
-        print(f"    İki ayak birden havada: {cycle['double_flight_pct']:.1f}%")
-    
-    print("\n--- Sağ Ayak Bazlı Cycle'lar ---")
-    for i, cycle in enumerate(flight_metrics['right_foot_cycles']):
-        print(f"  Cycle {i+1}: {cycle['start_time']:.2f}s - {cycle['end_time']:.2f}s ({cycle['cycle_frames']} frame)")
-        print(f"    Sol ayak havada: {cycle['left_flight_pct']:.1f}%")
-        print(f"    Sağ ayak havada: {cycle['right_flight_pct']:.1f}%")
-        print(f"    İki ayak birden havada: {cycle['double_flight_pct']:.1f}%")
-    
-    print("\n--- ORTALAMALAR ---")
-    avgs = flight_metrics['overall_averages']
-    print(f"  Sol ayak havada kalma (ort): {avgs['avg_left_flight']:.1f}%")
-    print(f"  Sağ ayak havada kalma (ort): {avgs['avg_right_flight']:.1f}%")
-    print(f"  İki ayak birden havada (ort): {avgs['avg_double_flight']:.1f}%")
-    print("="*60 + "\n")
     
     return {
         'timestamps': timestamps,
@@ -325,7 +301,6 @@ def plot_ankle_x(filepath):
 
 def main():
     folder = "nlf_outputs"
-    print("\n=== Ankle X Coordinate Analysis ===\n")
     
     files = sorted(f for f in os.listdir(folder) if f.endswith(".jsonl"))
     for i, f in enumerate(files):

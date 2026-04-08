@@ -257,6 +257,7 @@ OVERSTRIDE_THRESHOLD = 100   # units in 3D coordinate space
 def analyze_overstride(
     contacts: list[dict],
     frames:   list[dict],
+    verbose:  bool = True,
 ) -> list[dict]:
     """
     Calculate overstride for each initial contact frame.
@@ -328,46 +329,57 @@ def analyze_overstride(
 
     results.sort(key=lambda x: x["frame"])
 
-    # ── print summary ──
-    sep  = "-" * 68
-    sep2 = "=" * 68
+    if verbose:
+        # ── print summary ──
+        sep  = "-" * 68
+        sep2 = "=" * 68
+        n_over = sum(1 for r in results if r["is_overstride"])
+
+        print(f"\n{sep2}")
+        print(f"  OVERSTRIDE ANALYSIS")
+        print(f"{sep2}")
+        print(f"  Threshold : >{OVERSTRIDE_THRESHOLD} units  |  "
+              f"Run direction: {'+X' if run_dir == 1 else '-X'}")
+        print(f"  {sep}")
+        print(f"  {'Frame':>7}  {'Side':>5}  {'Foot mid X':>11}  "
+              f"{'Pelvis X':>10}  {'Overstride':>11}  {'Flag':>10}")
+        print(f"  {sep}")
+
+        for r in results:
+            flag = "OVERSTRIDE" if r["is_overstride"] else ""
+            print(f"  {r['frame']:>7}  {r['side']:>5}  {r['foot_mid_x']:>11.1f}  "
+                  f"{r['pelvis_x']:>10.1f}  {r['overstride']:>+11.1f}  {flag:>10}")
+
+        print(f"  {sep}")
+        print(f"  Steps analysed : {len(results)}")
+        print(f"  Overstrides    : {n_over} / {len(results)}")
+
+        if results:
+            vals = [r["overstride"] for r in results]
+            print(f"  Mean overstride: {np.mean(vals):+.1f}  "
+                  f"std={np.std(vals):.1f}  "
+                  f"range=[{min(vals):+.1f}, {max(vals):+.1f}]")
+
+        l_vals = [r["overstride"] for r in results if r["side"] == "L"]
+        r_vals = [r["overstride"] for r in results if r["side"] == "R"]
+        if l_vals and r_vals:
+            print(f"  Mean L         : {np.mean(l_vals):+.1f}  "
+                  f"Mean R: {np.mean(r_vals):+.1f}  "
+                  f"diff={np.mean(l_vals) - np.mean(r_vals):+.1f}")
+
+        print(f"{sep2}\n")
+
+    # Calculate summary statistics for return
     n_over = sum(1 for r in results if r["is_overstride"])
-
-    print(f"\n{sep2}")
-    print(f"  OVERSTRIDE ANALYSIS")
-    print(f"{sep2}")
-    print(f"  Threshold : >{OVERSTRIDE_THRESHOLD} units  |  "
-          f"Run direction: {'+X' if run_dir == 1 else '-X'}")
-    print(f"  {sep}")
-    print(f"  {'Frame':>7}  {'Side':>5}  {'Foot mid X':>11}  "
-          f"{'Pelvis X':>10}  {'Overstride':>11}  {'Flag':>10}")
-    print(f"  {sep}")
-
-    for r in results:
-        flag = "OVERSTRIDE" if r["is_overstride"] else ""
-        print(f"  {r['frame']:>7}  {r['side']:>5}  {r['foot_mid_x']:>11.1f}  "
-              f"{r['pelvis_x']:>10.1f}  {r['overstride']:>+11.1f}  {flag:>10}")
-
-    print(f"  {sep}")
-    print(f"  Steps analysed : {len(results)}")
-    print(f"  Overstrides    : {n_over} / {len(results)}")
-
     if results:
         vals = [r["overstride"] for r in results]
-        print(f"  Mean overstride: {np.mean(vals):+.1f}  "
-              f"std={np.std(vals):.1f}  "
-              f"range=[{min(vals):+.1f}, {max(vals):+.1f}]")
+        mean_abs = float(np.mean(vals))
+        verdict = "OVERSTRIDE" if n_over > len(results) // 2 else "NORMAL"
+    else:
+        mean_abs = 0.0
+        verdict = "NO_DATA"
 
-    l_vals = [r["overstride"] for r in results if r["side"] == "L"]
-    r_vals = [r["overstride"] for r in results if r["side"] == "R"]
-    if l_vals and r_vals:
-        print(f"  Mean L         : {np.mean(l_vals):+.1f}  "
-              f"Mean R: {np.mean(r_vals):+.1f}  "
-              f"diff={np.mean(l_vals) - np.mean(r_vals):+.1f}")
-
-    print(f"{sep2}\n")
-
-    return results
+    return results, mean_abs, verdict, n_over, len(results)
 
 
 # ── plotting ──────────────────────────────────────────────────────
@@ -595,7 +607,7 @@ def run_gait_pipeline(
                      strike["overall"], label)
 
     # step 4 — overstride
-    mean_abs, verdict, n_over, n_tot = analyze_overstride(
+    overstride_results, mean_abs, verdict, n_over, n_tot = analyze_overstride(
         contacts = contacts,
         frames   = frames,
         verbose  = verbose,
@@ -612,6 +624,7 @@ def run_gait_pipeline(
         mn_amax           = strike["mn_amax"],
         contacts          = contacts,
         overstride        = (mean_abs, verdict, n_over, n_tot),
+        overstride_results = overstride_results,
     )
 
 
@@ -626,7 +639,7 @@ def analyze_overstride(
     path:       Optional[str]  = None,
     threshold:  float          = OVERSTRIDE_THRESHOLD,
     verbose:    bool           = True,
-) -> list:
+) -> tuple[list, float, str, int, int]:
     """
     Calculate overstride for each initial contact.
 
@@ -650,13 +663,12 @@ def analyze_overstride(
 
     Returns
     -------
-    list of dicts, one per contact, sorted by frame:
-        frame         : IC frame index
-        side          : "L" or "R"
-        foot_mid_x    : (ankle_x + foot_x) / 2 at IC frame
-        pelvis_x      : pelvis X at IC frame
-        offset        : signed distance foot ahead of pelvis (+ = forward)
-        overstride    : bool — True if abs(offset) > threshold
+    tuple of (results, mean_abs, verdict, n_over, n_tot):
+        results : list of dicts, one per contact, sorted by frame
+        mean_abs : float, mean absolute overstride value
+        verdict : str, "yes"/"no"/"maybe" based on overstride percentage
+        n_over : int, number of steps with overstride
+        n_tot : int, total number of steps analyzed
     """
     if frames is None and path is None:
         raise ValueError("Provide either frames or path.")
@@ -722,7 +734,7 @@ def analyze_overstride(
     else:
         verdict = "no"
 
-    return mean_abs, verdict, n_over, n_tot
+    return results, mean_abs, verdict, n_over, n_tot
 
 
 def _print_overstride(

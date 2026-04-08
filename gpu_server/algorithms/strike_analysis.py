@@ -46,6 +46,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.ndimage import uniform_filter1d
+from typing import Optional
+from typing import Optional
 
 
 # ── SMPL Joint Tanımları ──────────────────────────────────────────
@@ -196,7 +198,7 @@ def analyze_strike(filepath):
 
 
 # ── Görselleştirme ───────────────────────────────────────────────
-def plot_strike(filepath):
+def plot_strike(filepath, save_path: Optional[str] = None):
     r = analyze_strike(filepath)
     fn = os.path.basename(filepath)
     n = r["n_frames"]
@@ -299,54 +301,58 @@ def plot_strike(filepath):
             bbox=dict(boxstyle="round", facecolor="wheat", alpha=.85))
 
     plt.tight_layout()
-    plt.show()
+    if save_path:
+        fig.savefig(save_path, dpi=200)
+    plt.close(fig)
     return r
 
 
 # ── Toplu Analiz ──────────────────────────────────────────────────
 def batch_analyze(folder="nlf_outputs"):
     files = sorted(f for f in os.listdir(folder) if f.endswith(".jsonl"))
-
-    print(f"\n{'═'*95}")
-    print("  TOPLU STRIKE ANALİZİ  (v4 – mn_max, çift metrik)")
-    print(f"{'═'*95}\n")
-    hdr = (f"  {'Dosya':<42} {'mn_max':>8} {'mn_amax':>8}"
-           f"  {'Sonuç':<15} {'Doğr.':<15} {'Güven':<8}")
-    print(hdr)
-    print(f"  {'-'*91}")
+    results = []
 
     for f in files:
         r = analyze_strike(os.path.join(folder, f))
-        agree = "✓" if r["type"] == r["type_angle"] else "✗"
-        print(f"  {f:<42} {r['mn_max']:>+8.4f} {r['mn_amax']:>+7.1f}°"
-              f"  {r['type']:<15} {r['type_angle']:<13}{agree} {r['confidence']:<8}")
+        results.append({
+            'file': f,
+            'mn_max': r['mn_max'],
+            'mn_amax': r['mn_amax'],
+            'type': r['type'],
+            'type_angle': r['type_angle'],
+            'confidence': r['confidence'],
+            'metrics_agree': r['type'] == r['type_angle'],
+        })
 
-    print(f"  {'-'*91}")
-    print(f"\n  Eşikler:  mn_max > {TH_HEEL} → Heel  |"
-          f"  {TH_TOE} < mn_max ≤ {TH_HEEL} → Mid  |"
-          f"  ≤ {TH_TOE} → Toe")
-    print(f"  Doğr.:    mn_amax > {TH_HEEL_A}° → Heel  |"
-          f"  {TH_TOE_A}° < mn_amax ≤ {TH_HEEL_A}° → Mid  |"
-          f"  ≤ {TH_TOE_A}° → Toe\n")
+    return {
+        'folder': folder,
+        'summary': results,
+        'thresholds': {
+            'heel': TH_HEEL,
+            'toe': TH_TOE,
+            'heel_angle': TH_HEEL_A,
+            'toe_angle': TH_TOE_A,
+        }
+    }
 
 
 # ── CLI ───────────────────────────────────────────────────────────
 def main():
     folder = "nlf_outputs"
-    print("\n=== Heel / Toe / Mid Strike Analizi (v4) ===\n")
-    print("  1: Tek dosya analizi (grafik)")
-    print("  2: Toplu analiz (tüm dosyalar)")
-
-    choice = input("\nSeçim (1/2): ").strip()
+    choice = input("\nChoose 1=plot file, 2=batch analyze: ").strip()
 
     if choice == "2":
-        batch_analyze(folder)
+        results = batch_analyze(folder)
+        print(results)
     else:
         files = sorted(f for f in os.listdir(folder) if f.endswith(".jsonl"))
         for i, f in enumerate(files):
             print(f"  {i}: {f}")
-        idx = int(input("\nDosya no: "))
-        plot_strike(os.path.join(folder, files[idx]))
+        idx = int(input("\nFile index: "))
+        save_path = input("Save plot path (or press enter for default): ").strip()
+        if not save_path:
+            save_path = os.path.join(folder, f"strike_analysis_{idx}.png")
+        plot_strike(os.path.join(folder, files[idx]), save_path=save_path)
 
 
 if __name__ == "__main__":

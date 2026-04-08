@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import json
-from gait_pipeline import run_gait_pipeline
+from contact_and_overstride import run_gait_pipeline
 
 SMPL_JOINT_NAMES = [
     "pelvis", "left_hip", "right_hip", "spine1",
@@ -16,27 +16,28 @@ def get_joint(frame, joint_name):
     idx = SMPL_JOINT_NAMES.index(joint_name)
     return np.array(frame["joints_3d"][0][0][idx], dtype=float)
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Contact frame'lerinde alpha, lean ve overstride index hesaplama."
-    )
-    parser.add_argument("jsonl_file")
-    parser.add_argument("--label", default="Runner")
-    parser.add_argument("--fps", type=float, default=60.0)
-    parser.add_argument("--k", type=float, default=0.7,
-                        help="lean forward ağırlığı")
-    args = parser.parse_args()
 
-    result = run_gait_pipeline(
-        path=args.jsonl_file,
-        label=args.label,
-        fps=args.fps,
-        verbose=False,
-        plot=False
-    )
+def calculate_overstride_at_contact(
+    frames: list,
+    contacts: list,
+    k: float = 0.7
+) -> dict:
+    """
+    Calculate overstride index at contact frames.
 
-    frames = result["frames"]
-    contacts = result["contacts"]
+    Parameters
+    ----------
+    frames : list
+        List of frame dictionaries
+    contacts : list
+        List of contact dictionaries from gait pipeline
+    k : float
+        Weight for lean forward component (default 0.7)
+
+    Returns
+    -------
+    dict with per_contact data and summary statistics
+    """
     output = []
 
     for c in contacts:
@@ -59,7 +60,7 @@ def main():
 
         # alpha: pelvis -> contact_mid açısı (x-y sagittal düzlem)
         x = contact_mid[0] - pelvis[0]
-        y = contact_mid[1] - pelvis[1] # y aşağı doğru artıyorsa
+        y = contact_mid[1] - pelvis[1]  # y aşağı doğru artıyorsa
         alpha = np.degrees(np.arctan2(x, y))
 
         # lean forward: pelvis -> head doğrusu, x-y düzleminde
@@ -68,7 +69,7 @@ def main():
         lean_forward = np.degrees(np.arctan2(dx, dy))
 
         # birleşik skor
-        overstride_index = alpha - args.k * lean_forward
+        overstride_index = alpha - k * lean_forward
 
         output.append({
             "frame": int(frame_idx),
@@ -97,7 +98,7 @@ def main():
         mean_osi = None
         comment = "Contact bulunamadı."
 
-    final_result = {
+    return {
         "per_contact": output,
         "mean_alpha_deg": mean_alpha,
         "mean_lean_forward_deg": mean_lean,
@@ -105,14 +106,40 @@ def main():
         "comment": comment
     }
 
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Contact frame'lerinde alpha, lean ve overstride index hesaplama."
+    )
+    parser.add_argument("jsonl_file")
+    parser.add_argument("--label", default="Runner")
+    parser.add_argument("--fps", type=float, default=60.0)
+    parser.add_argument("--k", type=float, default=0.7,
+                        help="lean forward ağırlığı")
+    args = parser.parse_args()
+
+    result = run_gait_pipeline(
+        path=args.jsonl_file,
+        label=args.label,
+        fps=args.fps,
+        verbose=False,
+        plot=False
+    )
+
+    frames = result["frames"]
+    contacts = result["contacts"]
+
+    final_result = calculate_overstride_at_contact(frames, contacts, k=args.k)
+
     print(json.dumps(final_result, indent=2, ensure_ascii=False))
 
     print("\n--- Özet ---")
-    if mean_alpha is not None:
-        print(f"Ortalama alpha: {mean_alpha:.2f} derece")
-        print(f"Ortalama lean forward: {mean_lean:.2f} derece")
-        print(f"Ortalama overstride index: {mean_osi:.2f} derece")
-    print(f"Yorum: {comment}")
+    if final_result["mean_alpha_deg"] is not None:
+        print(f"Ortalama alpha: {final_result['mean_alpha_deg']:.2f} derece")
+        print(f"Ortalama lean forward: {final_result['mean_lean_forward_deg']:.2f} derece")
+        print(f"Ortalama overstride index: {final_result['mean_overstride_index_deg']:.2f} derece")
+    print(f"Yorum: {final_result['comment']}")
+
 
 if __name__ == "__main__":
     main()

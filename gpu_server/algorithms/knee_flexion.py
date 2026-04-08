@@ -195,7 +195,7 @@ def find_gait_events(velocity_signal, knee_angles):
     return events
 
 
-def plot_ankle_x(filepath):
+def plot_ankle_x(filepath, save_path=None):
     """Ankle X velocity ve diz açısı grafiği."""
     frames = load_nlf(filepath)
     fn = os.path.basename(filepath)
@@ -318,46 +318,9 @@ def plot_ankle_x(filepath):
     ax2.grid(True, alpha=0.3)
     
     plt.tight_layout()
-    plt.show()
-    
-    # Sonuçları yazdır
-    print("\n" + "="*60)
-    print("KNEE FLEXION GAIT EVENTS")
-    print("="*60)
-    
-    print("\n--- SOL AYAK ---")
-    for i in range(len(left_events['foot_strike'])):
-        print(f"  Cycle {i+1}:")
-        if i < len(left_events['foot_strike']):
-            idx, ang = left_events['foot_strike'][i]
-            print(f"    Foot Strike:  {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(left_events['mid_stance']):
-            idx, ang = left_events['mid_stance'][i]
-            print(f"    Mid Stance:   {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(left_events['toe_off']):
-            idx, ang = left_events['toe_off'][i]
-            print(f"    Toe Off:      {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(left_events['mid_swing']):
-            idx, ang = left_events['mid_swing'][i]
-            print(f"    Mid Swing:    {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-    
-    print("\n--- SAĞ AYAK ---")
-    for i in range(len(right_events['foot_strike'])):
-        print(f"  Cycle {i+1}:")
-        if i < len(right_events['foot_strike']):
-            idx, ang = right_events['foot_strike'][i]
-            print(f"    Foot Strike:  {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(right_events['mid_stance']):
-            idx, ang = right_events['mid_stance'][i]
-            print(f"    Mid Stance:   {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(right_events['toe_off']):
-            idx, ang = right_events['toe_off'][i]
-            print(f"    Toe Off:      {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-        if i < len(right_events['mid_swing']):
-            idx, ang = right_events['mid_swing'][i]
-            print(f"    Mid Swing:    {ang:.1f}° @ {timestamps[idx+1]:.2f}s")
-    
-    print("="*60 + "\n")
+    if save_path:
+        fig.savefig(save_path, dpi=200, bbox_inches='tight')
+    plt.close(fig)
     
     return {
         'timestamps': timestamps,

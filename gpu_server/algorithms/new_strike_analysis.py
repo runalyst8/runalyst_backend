@@ -60,6 +60,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import find_peaks
 from scipy.ndimage import uniform_filter1d
+from typing import Optional
 
 FPS = 64.0
 
@@ -202,44 +203,28 @@ def compute_strike_metrics(frames: list[dict]) -> dict:
 
 # ── printing ──────────────────────────────────────────────────────
 
-def print_results(metrics: dict, path: str, label: str,
-                  fps: float, n_frames: int) -> None:
-    sep  = "─" * 58
-    sep2 = "═" * 58
-    L = metrics["left"]
-    R = metrics["right"]
-    agree_str = "✓ agree" if metrics["metrics_agree"] else "✗ disagree"
-
-    print(f"\n{sep2}")
-    print(f"  STRIKE TYPE DETECTION  —  {label}")
-    print(f"{sep2}")
-    print(f"  File        : {path}")
-    print(f"  Total frames: {n_frames}  |  "
-          f"Duration: {n_frames / fps:.2f} s  |  FPS: {fps}")
-    print(f"  {sep}")
-    print(f"  {'Side':<8}  {'Shin len':>10}  {'max norm_diff':>14}  "
-          f"{'max angle':>10}  {'Strike':>8}")
-    print(f"  {sep}")
-    print(f"  {'Left':<8}  {L['shin_len']:>10.0f}  {L['max_nd']:>+14.4f}  "
-          f"{L['max_angle']:>+9.1f}°  {_classify_norm(L['max_nd']):>8}")
-    print(f"  {'Right':<8}  {R['shin_len']:>10.0f}  {R['max_nd']:>+14.4f}  "
-          f"{R['max_angle']:>+9.1f}°  {_classify_norm(R['max_nd']):>8}")
-    print(f"  {sep}")
-    print(f"  mn_max  (primary)    : {metrics['mn_max']:>+.4f}"
-          f"  →  {metrics['primary']}")
-    print(f"  mn_amax (validation) : {metrics['mn_amax']:>+.1f}°"
-          f"  →  {metrics['validation']}  ({agree_str})")
-    print(f"  {sep}")
-    print(f"  Thresholds  : HEEL > {TH_HEEL}  |  "
-          f"MID {TH_TOE} to {TH_HEEL}  |  TOE ≤ {TH_TOE}")
-    print(f"  Confidence  : {metrics['confidence']}")
-    print(f"  Result      : {metrics['primary']}")
-    print(f"{sep2}\n")
+def build_strike_summary(metrics: dict, path: str, label: str,
+                         fps: float, n_frames: int) -> dict:
+    return {
+        'path': path,
+        'label': label,
+        'fps': fps,
+        'n_frames': n_frames,
+        'primary': metrics['primary'],
+        'validation': metrics['validation'],
+        'confidence': metrics['confidence'],
+        'mn_max': metrics['mn_max'],
+        'mn_amax': metrics['mn_amax'],
+        'metrics_agree': metrics['metrics_agree'],
+        'left': metrics['left'],
+        'right': metrics['right'],
+    }
 
 
 # ── plotting ──────────────────────────────────────────────────────
 
-def plot_results(metrics: dict, path: str, label: str) -> None:
+def plot_results(metrics: dict, path: str, label: str,
+                 save_path: Optional[str] = None) -> Optional[str]:
     L   = metrics["left"]
     R   = metrics["right"]
     fn  = os.path.basename(path)
@@ -307,7 +292,10 @@ def plot_results(metrics: dict, path: str, label: str) -> None:
                   edgecolor='#1e3554', labelcolor='#94a3b8')
 
     fig.tight_layout()
-    plt.show()
+    if save_path:
+        fig.savefig(save_path, dpi=200)
+    plt.close(fig)
+    return save_path
 
 
 # ── main analysis function ────────────────────────────────────────
@@ -342,10 +330,12 @@ def analyze_strike_type(
     """
     frames  = load_jsonl(path)
     metrics = compute_strike_metrics(frames)
-    print_results(metrics, path, label, fps, len(frames))
+    summary = build_strike_summary(metrics, path, label, fps, len(frames))
 
     if plot:
-        plot_results(metrics, path, label)
+        save_name = f"{label.replace(' ', '_')}_strike_detection.png"
+        plot_results(metrics, path, label, save_path=save_name)
+        summary['plot_path'] = save_name
 
     return dict(
         overall       = metrics["primary"],
