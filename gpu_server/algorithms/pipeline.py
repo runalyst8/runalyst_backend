@@ -13,6 +13,7 @@ import sys
 import os
 from typing import Optional
 import argparse
+import numpy as np
 
 # Add current directory to path for imports
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -217,16 +218,24 @@ def run_full_pipeline(
     try:
         knee_plot_path = os.path.join(output_dir, f"{label}_knee_flexion.png")
         knee_result = analyze_knee_flexion(path, save_path=knee_plot_path)
-        # Extract relevant metrics
-        knee_summary = {
-            "left_events": knee_result.get("left_events", {}),
-            "right_events": knee_result.get("right_events", {}),
-            "left_knee_angles": [float(x) for x in knee_result.get("left_knee_angles", [])]
-                if "left_knee_angles" in knee_result else None,
-            "right_knee_angles": [float(x) for x in knee_result.get("right_knee_angles", [])]
-                if "right_knee_angles" in knee_result else None,
-            "plot_path": knee_plot_path,
-        }
+        # Extract angle statistics from gait events
+        knee_summary = {"plot_path": knee_plot_path, "left": {}, "right": {}}
+        for side, events in [
+            ("left", knee_result.get("left_events", {})),
+            ("right", knee_result.get("right_events", {})),
+        ]:
+            for event_name in ["foot_strike", "mid_stance", "toe_off", "mid_swing"]:
+                angles = [float(a) for _, a in events.get(event_name, [])]
+                if angles:
+                    knee_summary[side][event_name] = {
+                        "count": len(angles),
+                        "mean_deg": float(np.mean(angles)),
+                        "std_deg": float(np.std(angles)),
+                        "min_deg": float(np.min(angles)),
+                        "max_deg": float(np.max(angles)),
+                    }
+                else:
+                    knee_summary[side][event_name] = {"count": 0}
         results["modules"]["knee_flexion_analysis"] = knee_summary
         if verbose:
             print("    ✓ Knee flexion analysis complete")
@@ -327,10 +336,18 @@ def run_full_pipeline(
         ka = results["modules"].get("knee_flexion_analysis", {})
         if "status" not in ka:
             print(f"\n  ▸ KNEE FLEXION ANALYSIS")
-            l_events = ka.get('left_events', {})
-            r_events = ka.get('right_events', {})
-            print(f"    Left foot cycles:  {len(l_events.get('foot_strike', []))} detected")
-            print(f"    Right foot cycles: {len(r_events.get('foot_strike', []))} detected")
+            for side in ["left", "right"]:
+                side_data = ka.get(side, {})
+                fs = side_data.get("foot_strike", {})
+                ms = side_data.get("mid_stance", {})
+                to = side_data.get("toe_off", {})
+                sw = side_data.get("mid_swing", {})
+                print(f"    {side.capitalize()} cycles:      {fs.get('count', 0)} detected")
+                if fs.get("count", 0):
+                    print(f"      Foot strike:   {fs.get('mean_deg', 0):.1f}° ± {fs.get('std_deg', 0):.1f}°")
+                    print(f"      Mid stance:    {ms.get('mean_deg', 0):.1f}° ± {ms.get('std_deg', 0):.1f}°")
+                    print(f"      Toe off:       {to.get('mean_deg', 0):.1f}° ± {to.get('std_deg', 0):.1f}°")
+                    print(f"      Mid swing:     {sw.get('mean_deg', 0):.1f}° ± {sw.get('std_deg', 0):.1f}°")
 
         # Alpers Overstride Summary
         ao = results["modules"].get("alpers_overstride", {})
@@ -387,7 +404,7 @@ def main():
     )
     parser.add_argument("jsonl_file", help="Path to JSONL file with gait data")
     parser.add_argument("--label", default="Runner", help="Subject label (default: Runner)")
-    parser.add_argument("--fps", type=float, default=64.0, help="Frames per second (default: 64)")
+    parser.add_argument("--fps", type=float, default=60.0, help="Frames per second (default: 60)")
     parser.add_argument("--output-dir", default="pipeline_output", help="Output directory")
     parser.add_argument("--quiet", action="store_true", help="Suppress verbose output")
 
