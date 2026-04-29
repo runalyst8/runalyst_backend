@@ -1,0 +1,5 @@
+Use this folder to create an extractor python file which uses the nlf model to extract frames from videos. Files can be created later from our current functional notebooks:
+
+1. Extract frames
+2. Apply nlf
+3. Turn to jsonl
