@@ -7,10 +7,11 @@ from app.deps.db import get_db
 from app.models.user import User
 from app.models.profile_info import ProfileInfo
 from app.auth.schemas import SignUpIn, TokenOut, UserOut, ProfileUpdateIn, ProfileOut
+from app.auth.schemas import PasswordResetRequestIn, PasswordResetIn, SendVerificationIn, VerifyEmailIn
 from app.core.security import hash_password, verify_password, create_access_token, decode_access_token
-from app.auth.schemas import PasswordResetRequestIn, PasswordResetIn
 from app.core.security import create_password_reset_token, decode_password_reset_token
 from app.services.storage import supabase_client
+from app.services import otp_store, email as email_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 bearer = HTTPBearer(auto_error=False)
@@ -62,9 +63,48 @@ def login(payload: SignUpIn, db: Session = Depends(get_db)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials"
         )
-    
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Email not verified. Please verify your email before signing in."
+        )
     token = create_access_token(sub=str(user.id))
     return TokenOut(access_token=token)
+
+
+@router.post("/send-verification-email", status_code=status.HTTP_200_OK)
+def send_verification_email(payload: SendVerificationIn, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        # Don't reveal whether the email exists
+        return {"detail": "If that email is registered, a verification code has been sent."}
+    if user.is_verified:
+        return {"detail": "Email is already verified."}
+    code = otp_store.save_otp(payload.email)
+    try:
+        email_service.send_verification_email(payload.email, code)
+    except Exception as e:
+        print(f"Email send error: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to send verification email. Please try again."
+        )
+    return {"detail": "Verification code sent."}
+
+
+@router.post("/verify-email", status_code=status.HTTP_200_OK)
+def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
+    if not otp_store.verify_otp(payload.email, payload.code):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code."
+        )
+    user = db.query(User).filter(User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
+    user.is_verified = True
+    db.commit()
+    return {"detail": "Email verified successfully."}
 
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):

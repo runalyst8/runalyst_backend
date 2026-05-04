@@ -51,3 +51,10 @@ class PasswordResetRequestIn(BaseModel):
 class PasswordResetIn(BaseModel):
     token: str
     new_password: str
+
+class SendVerificationIn(BaseModel):
+    email: EmailStr
+
+class VerifyEmailIn(BaseModel):
+    email: EmailStr
+    code: str = Field(..., min_length=6, max_length=6)

@@ -16,7 +16,11 @@ class Settings(BaseSettings):
 
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 15
     SECRET_KEY: str = "secretkey"
-    
+
+    # Email (Resend)
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "noreply@runalyst.com"
+
     # App Configuration
     APP_ENV: str = "development"
     DEBUG: bool = False

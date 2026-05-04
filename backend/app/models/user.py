@@ -24,9 +24,14 @@ class User(Base):
         nullable=False
     )
     is_active: Mapped[bool] = mapped_column(
-        Boolean, 
-        nullable=False, 
+        Boolean,
+        nullable=False,
         server_default="true"
+    )
+    is_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default="false"
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
