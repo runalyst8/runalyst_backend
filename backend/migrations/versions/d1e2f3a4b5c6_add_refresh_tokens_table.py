@@ -15,19 +15,25 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.create_table(
-        'refresh_tokens',
-        sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column('user_id', sa.Integer(), nullable=False),
-        sa.Column('token', sa.String(128), nullable=False),
-        sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
-        sa.Column('revoked', sa.Boolean(), nullable=False, server_default='false'),
-        sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
-        sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-        sa.PrimaryKeyConstraint('id'),
-    )
-    op.create_index('ix_refresh_tokens_token', 'refresh_tokens', ['token'], unique=True)
-    op.create_index('ix_refresh_tokens_user_id', 'refresh_tokens', ['user_id'])
+    conn = op.get_bind()
+    result = conn.execute(sa.text(
+        "SELECT 1 FROM information_schema.tables "
+        "WHERE table_name='refresh_tokens'"
+    )).fetchone()
+    if not result:
+        op.create_table(
+            'refresh_tokens',
+            sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+            sa.Column('user_id', sa.Integer(), nullable=False),
+            sa.Column('token', sa.String(128), nullable=False),
+            sa.Column('expires_at', sa.DateTime(timezone=True), nullable=False),
+            sa.Column('revoked', sa.Boolean(), nullable=False, server_default='false'),
+            sa.Column('created_at', sa.DateTime(timezone=True), nullable=False, server_default=sa.text('now()')),
+            sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
+            sa.PrimaryKeyConstraint('id'),
+        )
+        op.create_index('ix_refresh_tokens_token', 'refresh_tokens', ['token'], unique=True)
+        op.create_index('ix_refresh_tokens_user_id', 'refresh_tokens', ['user_id'])
 
 
 def downgrade() -> None:
