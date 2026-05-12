@@ -12,4 +12,4 @@ alembic upgrade head
 echo "Migrations complete. Starting Gunicorn server..."
 # This is the final command. It will start the web server, and the script
 # will continue to run as long as the server is running.
-gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:${PORT}
+gunicorn -w 1 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:${PORT}

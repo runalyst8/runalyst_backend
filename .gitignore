@@ -23,3 +23,11 @@ env/
 # IDE
 .vscode/
 .idea/
+
+vcs.xml
+misc.xml
+runalyst.iml
+
+node_modules
+expo-env.d.ts
+.expo

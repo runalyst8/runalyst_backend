@@ -1,12 +1,10 @@
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, status
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.session import db_ping
-from app.auth import routes as auth_router
-from app.runs import routes as runs_router
-from app.model_results import routes as model_results_router
-from app.core.scheduler import run_dispatcher_periodically
+from app.api.router import api_router as main_router
+from app.core.logging_config import setup_logging
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,14 +12,16 @@ async def lifespan(app: FastAPI):
     # Startup
     from app.db.base import Base
     from app.db.session import engine
-    from app.models.user import User  # Import models to register them
+
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info("Runalyst Backend Refactor is starting up...")
 
     # Create tables if they don't exist
     Base.metadata.create_all(bind=engine)
     print("✓ Database tables created/verified")
     print("✓ Application started")
 
-    dispatcher_task = asyncio.create_task(run_dispatcher_periodically())
     
     yield
     
@@ -29,11 +29,14 @@ async def lifespan(app: FastAPI):
     print("✓ Application shutting down")
 
 
+setup_logging()
 app = FastAPI(
-    title="User Auth API",
+    title="Runalyst API",
     description="User authentication and authorization API",
     version="1.0.0",
-    lifespan=lifespan
+    lifespan=lifespan,
+    docs_url="/documentation",
+    redoc_url=None
 )
 
 # CORS middleware - configure based on your needs
@@ -60,10 +63,7 @@ def health_db():
 
 
 # Include routers
-app.include_router(auth_router.router)
-
-app.include_router(runs_router.router)
-app.include_router(model_results_router.router)
+app.include_router(main_router)
 
 @app.get("/")
 def read_root():

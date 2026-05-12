@@ -19,10 +19,13 @@ class User(Base):
         index=True, 
         nullable=False
     )
-    hashed_password: Mapped[str] = mapped_column(
-        String(255), 
-        nullable=False
+    hashed_password: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True
     )
+    auth_provider: Mapped[str] = mapped_column(String(32), nullable=False, server_default="local")
+    google_sub: Mapped[str | None] = mapped_column(String(64), unique=True, nullable=True)
+    apple_sub: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     is_active: Mapped[bool] = mapped_column(
         Boolean,
         nullable=False,
