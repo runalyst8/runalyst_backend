@@ -7,9 +7,12 @@ from app.deps.db import get_db
 from app.models.user import User
 from app.models.profile_info import ProfileInfo
 from app.auth.schemas import SignUpIn, TokenOut, UserOut, ProfileUpdateIn, ProfileOut
-from app.auth.schemas import PasswordResetRequestIn, PasswordResetIn, SendVerificationIn, VerifyEmailIn
+from app.auth.schemas import PasswordResetRequestIn, PasswordResetIn, SendVerificationIn, VerifyEmailIn, RefreshIn, LogoutIn
 from app.core.security import hash_password, verify_password, create_access_token, decode_access_token
 from app.core.security import create_password_reset_token, decode_password_reset_token
+from app.core.security import create_refresh_token, refresh_token_expiry
+from app.models.refresh_token import RefreshToken
+from datetime import datetime, timezone
 from app.services.storage import supabase_client
 from app.services import otp_store, email as email_service
 
@@ -68,8 +71,12 @@ def login(payload: SignUpIn, db: Session = Depends(get_db)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Email not verified. Please verify your email before signing in."
         )
-    token = create_access_token(sub=str(user.id))
-    return TokenOut(access_token=token)
+    access_token = create_access_token(sub=str(user.id))
+    raw_refresh = create_refresh_token()
+    db_refresh = RefreshToken(user_id=user.id, token=raw_refresh, expires_at=refresh_token_expiry())
+    db.add(db_refresh)
+    db.commit()
+    return TokenOut(access_token=access_token, refresh_token=raw_refresh)
 
 
 @router.post("/send-verification-email", status_code=status.HTTP_200_OK)
@@ -105,6 +112,29 @@ def verify_email(payload: VerifyEmailIn, db: Session = Depends(get_db)):
     user.is_verified = True
     db.commit()
     return {"detail": "Email verified successfully."}
+
+@router.post("/refresh", response_model=TokenOut)
+def refresh(payload: RefreshIn, db: Session = Depends(get_db)):
+    db_token = db.query(RefreshToken).filter(RefreshToken.token == payload.refresh_token).first()
+    if not db_token or db_token.revoked or db_token.expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired refresh token")
+    db_token.revoked = True
+    raw_refresh = create_refresh_token()
+    new_db_token = RefreshToken(user_id=db_token.user_id, token=raw_refresh, expires_at=refresh_token_expiry())
+    db.add(new_db_token)
+    db.commit()
+    access_token = create_access_token(sub=str(db_token.user_id))
+    return TokenOut(access_token=access_token, refresh_token=raw_refresh)
+
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+def logout(payload: LogoutIn, db: Session = Depends(get_db)):
+    db_token = db.query(RefreshToken).filter(RefreshToken.token == payload.refresh_token).first()
+    if db_token:
+        db_token.revoked = True
+        db.commit()
+    return {"detail": "Logged out successfully"}
+
 
 @router.get("/me", response_model=UserOut)
 def me(current_user: User = Depends(get_current_user)):

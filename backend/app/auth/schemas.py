@@ -33,7 +33,14 @@ class ProfileOut(ProfileUpdateIn):
 
 class TokenOut(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+
+class RefreshIn(BaseModel):
+    refresh_token: str
+
+class LogoutIn(BaseModel):
+    refresh_token: str
 
 class UserOut(BaseModel):
     id: int
@@ -55,6 +62,12 @@ class PasswordResetIn(BaseModel):
 class SendVerificationIn(BaseModel):
     email: EmailStr
 
+    class Config:
+        json_schema_extra = {"example": {"email": "user@example.com"}}
+
 class VerifyEmailIn(BaseModel):
     email: EmailStr
     code: str = Field(..., min_length=6, max_length=6)
+
+    class Config:
+        json_schema_extra = {"example": {"email": "user@example.com", "code": "123456"}}

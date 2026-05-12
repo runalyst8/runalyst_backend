@@ -110,6 +110,15 @@ def decode_access_token(token: str) -> str | None:
         # Catch any other unexpected errors
         return None
 
+import secrets
+
+def create_refresh_token() -> str:
+    return secrets.token_urlsafe(64)
+
+def refresh_token_expiry() -> datetime:
+    from datetime import timedelta
+    return datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+
 def create_password_reset_token(email: str) -> str:
     """
     Creates a password reset token.
