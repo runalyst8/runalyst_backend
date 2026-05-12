@@ -26,8 +26,9 @@ class Settings(BaseSettings):
     GPU_API_KEY: str = ""
 
     # LLM Chat
-    OLLAMA_BASE_URL: str = "http://localhost:11434"
-    OLLAMA_MODEL: str = "qwen3.5:9b"
+    GEMINI_API_KEY: str = ""
+    GEMINI_BASE_URL: str = "https://generativelanguage.googleapis.com"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
 
     # App Configuration
     APP_ENV: str = "development"

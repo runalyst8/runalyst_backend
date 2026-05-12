@@ -26,41 +26,58 @@ def build_video_context(video: dict[str, Any], memory: dict[str, str]) -> str:
     )
 
 
-async def ask_ollama(
+def history_to_gemini_contents(history: list[dict[str, str]]) -> list[dict[str, Any]]:
+    contents: list[dict[str, Any]] = []
+    for message in history[-10:]:
+        content = message.get("content", "").strip()
+        if not content:
+            continue
+
+        role = "model" if message.get("role") == "assistant" else "user"
+        contents.append({"role": role, "parts": [{"text": content}]})
+
+    return contents
+
+
+async def ask_gemini(
     *,
     video: dict[str, Any],
     message: str,
     history: list[dict[str, str]],
     memory: dict[str, str],
 ) -> str:
-    messages = [{"role": "system", "content": build_video_context(video, memory)}]
-    messages.extend(history[-10:])
-    messages.append({"role": "user", "content": message})
+    if not settings.GEMINI_API_KEY:
+        raise RuntimeError("GEMINI_API_KEY is not configured")
+
+    contents = history_to_gemini_contents(history)
+    contents.append({"role": "user", "parts": [{"text": message}]})
 
     async with httpx.AsyncClient(timeout=180) as client:
         response = await client.post(
-            f"{settings.OLLAMA_BASE_URL}/api/chat",
+            f"{settings.GEMINI_BASE_URL}/v1beta/models/{settings.GEMINI_MODEL}:generateContent",
+            headers={
+                "Content-Type": "application/json",
+                "x-goog-api-key": settings.GEMINI_API_KEY,
+            },
             json={
-                "model": settings.OLLAMA_MODEL,
-                "messages": messages,
-                "stream": False,
-                "think": False,
-                "options": {
+                "systemInstruction": {
+                    "parts": [{"text": build_video_context(video, memory)}],
+                },
+                "contents": contents,
+                "generationConfig": {
                     "temperature": 0.4,
-                    "num_predict": 900,
+                    "maxOutputTokens": 900,
                 },
             },
         )
         response.raise_for_status()
 
     data = response.json()
-    message_data = data.get("message", {})
-    answer = message_data.get("content", "").strip()
-    if answer:
-        return answer
+    candidates = data.get("candidates", [])
+    if candidates:
+        parts = candidates[0].get("content", {}).get("parts", [])
+        answer = "\n".join(part.get("text", "") for part in parts).strip()
+        if answer:
+            return answer
 
-    thinking = message_data.get("thinking", "").strip()
-    if thinking:
-        return thinking
-
-    return "Ollama returned an empty response. Please try again."
+    return "Gemini returned an empty response. Please try again."

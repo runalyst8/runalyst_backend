@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.run import Run
-from app.services.chat.ollama_client import ask_ollama
+from app.services.chat.gemini_client import ask_gemini
 from app.services.chat.session_store import session_store
 
 
@@ -107,7 +107,7 @@ async def answer_chat_message(*, session_id: str, user_id: int, message: str) ->
     answer = answer_from_memory(state.memory, message)
     if not answer:
         try:
-            answer = await ask_ollama(
+            answer = await ask_gemini(
                 video=selected_video,
                 message=message,
                 history=state.chat_history,
@@ -116,7 +116,7 @@ async def answer_chat_message(*, session_id: str, user_id: int, message: str) ->
         except Exception as exc:
             raise HTTPException(
                 status_code=status.HTTP_502_BAD_GATEWAY,
-                detail=f"Could not get a response from Ollama: {exc}",
+                detail=f"Could not get a response from Gemini: {exc}",
             ) from exc
 
     state.chat_history.append({"role": "user", "content": message})
