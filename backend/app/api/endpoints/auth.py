@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr
 from app.deps.db import get_db
 from app.schemas.auth import SignUpIn, Token, GoogleAuthIn, AppleAuthIn
 from app.schemas.user import UserOut
 from app.services.auth import service as auth_service
+from app.services import otp_store
+from app.services.email import send_verification_email
 import logging
 
 router = APIRouter()
@@ -40,3 +43,27 @@ def apple_login(payload: AppleAuthIn, db: Session = Depends(get_db)):
     )
     logger.info("Apple OAuth login successful")
     return Token(access_token=token)
+
+
+class EmailIn(BaseModel):
+    email: EmailStr
+
+class VerifyEmailIn(BaseModel):
+    email: EmailStr
+    code: str
+
+@router.post("/send-verification-email", status_code=status.HTTP_200_OK)
+def send_verification(payload: EmailIn):
+    code = otp_store.save_otp(payload.email)
+    try:
+        send_verification_email(payload.email, code)
+    except Exception as e:
+        logger.error(f"Failed to send verification email to {payload.email}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send verification email")
+    return {"detail": "Verification email sent"}
+
+@router.post("/verify-email", status_code=status.HTTP_200_OK)
+def verify_email(payload: VerifyEmailIn):
+    if not otp_store.verify_otp(payload.email, payload.code):
+        raise HTTPException(status_code=400, detail="Invalid or expired verification code")
+    return {"detail": "Email verified successfully"}
