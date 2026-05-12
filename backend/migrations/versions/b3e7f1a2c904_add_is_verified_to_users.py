@@ -15,12 +15,17 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        'users',
-        sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='false')
-    )
-    # Backfill: existing users are considered already verified so they aren't locked out
-    op.execute("UPDATE users SET is_verified = true")
+    conn = op.get_bind()
+    result = conn.execute(sa.text(
+        "SELECT 1 FROM information_schema.columns "
+        "WHERE table_name='users' AND column_name='is_verified'"
+    )).fetchone()
+    if not result:
+        op.add_column(
+            'users',
+            sa.Column('is_verified', sa.Boolean(), nullable=False, server_default='false')
+        )
+        op.execute("UPDATE users SET is_verified = true")
 
 
 def downgrade() -> None:
