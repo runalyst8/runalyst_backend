@@ -17,6 +17,8 @@ async def lifespan(app: FastAPI):
     logger = logging.getLogger(__name__)
     logger.info("Runalyst Backend Refactor is starting up...")
 
+    import app.models  # ensure all models are registered before create_all
+
     # Create tables if they don't exist
     Base.metadata.create_all(bind=engine)
     print("✓ Database tables created/verified")
