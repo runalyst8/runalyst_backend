@@ -66,7 +66,7 @@ async def ask_gemini(
                 "contents": contents,
                 "generationConfig": {
                     "temperature": 0.4,
-                    "maxOutputTokens": 900,
+                    "maxOutputTokens": 2048,
                 },
             },
         )
