@@ -18,4 +18,5 @@ class AnalysisGetIn(BaseModel):
 
 class AnalysisOut(AnalysisBase):
     id: int
+    run_id: int
     created_at: datetime
