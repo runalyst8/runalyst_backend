@@ -22,6 +22,7 @@ def verify_gpu_api_key(api_key: str | None = Security(gpu_api_key_header)) -> No
 bearer_scheme = HTTPBearer(auto_error=False)
 
 
+#old method, currently unused
 def get_current_user(
         credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
         db: Session = Depends(get_db)

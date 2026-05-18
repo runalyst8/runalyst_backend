@@ -15,6 +15,7 @@ class SignUpIn(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
 
 class GoogleAuthIn(BaseModel):
@@ -25,3 +26,6 @@ class AppleAuthIn(BaseModel):
     identity_token: str
     email: Optional[str] = None
     full_name: Optional[str] = None
+
+class TokenRefreshRequest(BaseModel):
+    refresh_token: str

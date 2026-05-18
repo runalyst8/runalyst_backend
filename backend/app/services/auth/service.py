@@ -7,8 +7,10 @@ from app.core.apple_oauth import verify_apple_token
 from app.core.google_oauth import verify_google_id_token
 from app.crud import user as crud_user
 from app.schemas.auth import SignUpIn, Token
-from app.core.security import hash_password, verify_password, create_access_token
+from app.core.security import hash_password, verify_password, create_access_token, generate_user_tokens, \
+    decode_refresh_token
 from app.models.user import User
+
 
 
 def register_user(db: Session, *, payload: SignUpIn) -> User:
@@ -64,12 +66,12 @@ def authenticate_user(db: Session, *, payload: SignUpIn) -> Token:
             detail="User account is disabled"
         )
 
-    access_token = create_access_token(sub=str(user.id))
+    tokens = generate_user_tokens(user.id)
 
-    return Token(access_token=access_token)
+    return tokens
 
 
-def process_google_auth(db: Session, token: str) -> str:
+def process_google_auth(db: Session, token: str) -> Token:
     info = verify_google_id_token(token)
 
     email = info.get("email")
@@ -90,10 +92,10 @@ def process_google_auth(db: Session, token: str) -> str:
         user.google_sub = google_sub
         db.commit()
 
-    return create_access_token(sub=str(user.id))
+    return generate_user_tokens(user.id)
 
 
-def process_apple_auth(db: Session, identity_token: str, email_hint: str = None) -> str:
+def process_apple_auth(db: Session, identity_token: str, email_hint: str = None) -> Token:
     audience = os.getenv("APPLE_BUNDLE_ID")
     try:
         claims = verify_apple_token(identity_token, audience)
@@ -117,4 +119,19 @@ def process_apple_auth(db: Session, identity_token: str, email_hint: str = None)
 
         db.commit()
 
-    return create_access_token(sub=str(user.id))
+    return generate_user_tokens(user.id)
+
+def refresh_access_token(db: Session, refresh_token: str) -> Token:
+    try:
+        payload = decode_refresh_token(refresh_token)
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid refresh token payload")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
+
+    user = crud_user.get_user_by_id(db, user_id=int(user_id))
+    if not user or not user.is_active:
+        raise HTTPException(status_code=403, detail="User is inactive or does not exist")
+
+    return generate_user_tokens(user.id)

@@ -1,7 +1,15 @@
+import os
 from datetime import datetime, timedelta, timezone
+from typing import Dict, Any
+
+from fastapi import HTTPException
 from jose import jwt, JWTError
 import bcrypt
+from starlette import status
+
 from app.core.config import settings
+from app.schemas.auth import Token
+
 
 def hash_password(password: str) -> str:
     """
@@ -137,3 +145,40 @@ def decode_password_reset_token(token: str) -> str | None:
         return decoded_token.get("sub")
     except JWTError:
         return None
+
+def generate_user_tokens(user_id: int) -> Token:
+    access_token = create_access_token(sub=str(user_id), expires_delta=timedelta(minutes=15))
+    refresh_token = create_refresh_token()
+    return Token(access_token=access_token, refresh_token=refresh_token)
+
+
+JWT_REFRESH_SECRET_KEY = os.environ.get("JWT_REFRESH_SECRET_KEY")
+ALGORITHM = os.environ.get("ALGORITHM")
+
+def decode_refresh_token(token: str) -> Dict[str, Any]:
+    """
+    Decodes, validates the signature, and checks the expiration of a refresh token.
+    Raises an HTTPException if the token is invalid or expired.
+    """
+    try:
+        payload = jwt.decode(token, JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
+
+        # Explicitly verify this is a refresh token payload and not an access token
+        if payload.get("type") != "refresh":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type: Refresh token expected"
+            )
+
+        return payload
+
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Refresh token has expired"
+        )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate refresh token"
+        )
