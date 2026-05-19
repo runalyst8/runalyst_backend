@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Dict, Any
 
 from fastapi import HTTPException
 from jose import jwt, JWTError
@@ -89,34 +88,33 @@ def create_access_token(sub: str, expires_delta: timedelta | None = None) -> str
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALG)
 
 
-def decode_access_token(token: str) -> str | None:
+def decode_access_token(token: str) -> tuple[str | None, bool]:
     """
     Decode and verify a JWT access token.
-    
-    Args:
-        token: JWT token string to decode
-        
+
     Returns:
-        Subject (user ID) if token is valid, None otherwise
+        (user_id, is_expired) — is_expired=True means the token had a valid
+        signature but is past its expiry time and can be refreshed.
     """
     try:
-        payload = jwt.decode(
-            token, 
-            settings.JWT_SECRET, 
-            algorithms=[settings.JWT_ALG]
-        )
+        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALG])
         sub = payload.get("sub")
-        
-        # Ensure sub exists and is a string
-        if sub is None or not isinstance(sub, str):
-            return None
-            
-        return sub
+        if not sub or not isinstance(sub, str):
+            return None, False
+        return sub, False
     except JWTError:
-        return None
-    except Exception:
-        # Catch any other unexpected errors
-        return None
+        # Could be expired or truly invalid — decode without exp check to distinguish
+        try:
+            payload = jwt.decode(
+                token, settings.JWT_SECRET, algorithms=[settings.JWT_ALG],
+                options={"verify_exp": False}
+            )
+            sub = payload.get("sub")
+            if not sub or not isinstance(sub, str):
+                return None, False
+            return sub, True  # valid signature, just expired
+        except JWTError:
+            return None, False
 
 import secrets
 
@@ -125,7 +123,7 @@ def create_refresh_token() -> str:
 
 def refresh_token_expiry() -> datetime:
     from datetime import timedelta
-    return datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    return datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
 
 def create_password_reset_token(email: str) -> str:
     """
@@ -146,39 +144,11 @@ def decode_password_reset_token(token: str) -> str | None:
     except JWTError:
         return None
 
-def generate_user_tokens(user_id: int) -> Token:
+def generate_user_tokens(db, user_id: int) -> Token:
+    from app.crud.refresh_token import create_refresh_token as crud_create_refresh_token
+
     access_token = create_access_token(sub=str(user_id), expires_delta=timedelta(minutes=15))
-    refresh_token = create_refresh_token()
-    return Token(access_token=access_token, refresh_token=refresh_token)
-
-
-JWT_REFRESH_SECRET_KEY = os.environ.get("JWT_REFRESH_SECRET_KEY")
-ALGORITHM = os.environ.get("ALGORITHM")
-
-def decode_refresh_token(token: str) -> Dict[str, Any]:
-    """
-    Decodes, validates the signature, and checks the expiration of a refresh token.
-    Raises an HTTPException if the token is invalid or expired.
-    """
-    try:
-        payload = jwt.decode(token, JWT_REFRESH_SECRET_KEY, algorithms=[ALGORITHM])
-
-        # Explicitly verify this is a refresh token payload and not an access token
-        if payload.get("type") != "refresh":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token type: Refresh token expected"
-            )
-
-        return payload
-
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Refresh token has expired"
-        )
-    except JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate refresh token"
-        )
+    raw_refresh_token = create_refresh_token()
+    expires_at = refresh_token_expiry()
+    crud_create_refresh_token(db, user_id=user_id, token=raw_refresh_token, expires_at=expires_at)
+    return Token(access_token=access_token, refresh_token=raw_refresh_token)

@@ -7,8 +7,8 @@ from app.core.apple_oauth import verify_apple_token
 from app.core.google_oauth import verify_google_id_token
 from app.crud import user as crud_user
 from app.schemas.auth import SignUpIn, Token
-from app.core.security import hash_password, verify_password, create_access_token, generate_user_tokens, \
-    decode_refresh_token
+from app.core.security import hash_password, verify_password, create_access_token, generate_user_tokens
+from app.crud import refresh_token as crud_refresh_token
 from app.models.user import User
 
 
@@ -66,8 +66,8 @@ def authenticate_user(db: Session, *, payload: SignUpIn) -> Token:
             detail="User account is disabled"
         )
 
-    tokens = generate_user_tokens(user.id)
-
+    tokens = generate_user_tokens(db, user.id)
+    db.commit()
     return tokens
 
 
@@ -92,7 +92,9 @@ def process_google_auth(db: Session, token: str) -> Token:
         user.google_sub = google_sub
         db.commit()
 
-    return generate_user_tokens(user.id)
+    tokens = generate_user_tokens(db, user.id)
+    db.commit()
+    return tokens
 
 
 def process_apple_auth(db: Session, identity_token: str, email_hint: str = None) -> Token:
@@ -119,19 +121,23 @@ def process_apple_auth(db: Session, identity_token: str, email_hint: str = None)
 
         db.commit()
 
-    return generate_user_tokens(user.id)
+    tokens = generate_user_tokens(db, user.id)
+    db.commit()
+    return tokens
 
 def refresh_access_token(db: Session, refresh_token: str) -> Token:
-    try:
-        payload = decode_refresh_token(refresh_token)
-        user_id = payload.get("sub")
-        if not user_id:
-            raise HTTPException(status_code=401, detail="Invalid refresh token payload")
-    except Exception:
+    from datetime import datetime
+
+    record = crud_refresh_token.get_refresh_token(db, refresh_token)
+    expires = record.expires_at.replace(tzinfo=None) if record and record.expires_at.tzinfo else (record.expires_at if record else None)
+    if not record or record.revoked or expires < datetime.utcnow():
         raise HTTPException(status_code=401, detail="Invalid or expired refresh token")
 
-    user = crud_user.get_user_by_id(db, user_id=int(user_id))
+    user = crud_user.get_user_by_id(db, user_id=record.user_id)
     if not user or not user.is_active:
         raise HTTPException(status_code=403, detail="User is inactive or does not exist")
 
-    return generate_user_tokens(user.id)
+    crud_refresh_token.revoke_refresh_token(db, refresh_token)
+    tokens = generate_user_tokens(db, user.id)
+    db.commit()
+    return tokens
