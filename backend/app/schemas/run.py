@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from datetime import datetime
 from typing import Optional, Dict
 
@@ -16,6 +16,17 @@ class RunOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @computed_field
+    @property
+    def thumbnail_path(self) -> str:
+        if not self.video_path:
+            return ""
+
+        path = self.video_path.replace("user_videos_test", "video_thumbnails")
+        if path.endswith(".mp4"):
+            path = path[:-4] + ".jpg"
+        return path
 
 class RunAllOut(BaseModel):
     runs: Dict[int, RunOut]
