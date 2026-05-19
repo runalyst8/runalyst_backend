@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -20,3 +21,12 @@ class AnalysisOut(AnalysisBase):
     id: int
     run_id: int
     created_at: datetime
+    recommendations: dict[str, Any] | None = None
+
+
+class RecommendationsOut(BaseModel):
+    run_id: int
+    recommendations: dict[str, Any]
+
+    class Config:
+        from_attributes = True

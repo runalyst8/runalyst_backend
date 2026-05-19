@@ -1,7 +1,9 @@
+from typing import Any, List, Optional
+
 from sqlalchemy.orm import Session
+
 from app.models.analysis_result import AnalysisResult
 from app.models.run import Run
-from typing import List, Optional
 
 
 def create(db: Session, *, obj_in: dict) -> AnalysisResult:
@@ -36,6 +38,14 @@ def update(db: Session, *, db_obj: AnalysisResult, obj_in: dict) -> AnalysisResu
         if hasattr(db_obj, field):
             setattr(db_obj, field, obj_in[field])
 
+    db.add(db_obj)
+    return db_obj
+
+
+def save_recommendations(
+    db: Session, *, db_obj: AnalysisResult, recommendations: dict[str, Any]
+) -> AnalysisResult:
+    db_obj.recommendations = recommendations
     db.add(db_obj)
     return db_obj
 

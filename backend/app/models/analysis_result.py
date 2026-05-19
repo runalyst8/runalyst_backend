@@ -11,6 +11,7 @@ class AnalysisResult(Base):
 
     fps = Column(Float, nullable=False, server_default="0")
     modules = Column(JSONB)
+    recommendations = Column(JSONB, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

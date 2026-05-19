@@ -1,11 +1,12 @@
+import logging
+from typing import Any, List
+
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
-from typing import List
-import logging
 
-from app.deps.db import get_db
 from app.deps.auth import get_current_user_id, verify_gpu_api_key
-from app.schemas.analysis import AnalysisCreateIn, AnalysisOut
+from app.deps.db import get_db
+from app.schemas.analysis import AnalysisCreateIn, AnalysisOut, RecommendationsOut
 from app.services.analysis import service as analysis_service
 
 router = APIRouter()
@@ -46,3 +47,15 @@ def get_history(
     history = analysis_service.get_user_history(db, user_id=user_id)
     logger.info(f"Retrieved {len(history)} historical analyses for user {user_id}")
     return history
+
+
+@router.get("/recommendations")
+async def get_recommendations(
+        run_id: int,
+        db: Session = Depends(get_db),
+        user_id: int = Depends(get_current_user_id)
+):
+    logger.info(f"User {user_id} requesting recommendations for run {run_id}")
+    result = await analysis_service.get_or_generate_recommendations(db, run_id=run_id, user_id=user_id)
+    logger.info(f"Returning recommendations for run {run_id} (issues: {len(result.get('issues', []))})")
+    return {"run_id": run_id, "recommendations": result}
