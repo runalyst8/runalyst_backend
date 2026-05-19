@@ -23,10 +23,10 @@ class RunOut(BaseModel):
         if not self.video_path:
             return ""
 
-        path = self.video_path.replace("user_videos_test", "video_thumbnails")
-        if path.endswith(".mp4"):
-            path = path[:-4] + ".jpg"
-        return path
+        if self.video_path.endswith(".mp4"):
+            return self.video_path[:-4] + ".jpg"
+
+        return self.video_path + ".jpg"
 
 class RunAllOut(BaseModel):
     runs: Dict[int, RunOut]
