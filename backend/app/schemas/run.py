@@ -11,6 +11,7 @@ class RunOut(BaseModel):
     id: int
     title: Optional[str]
     video_path: str
+    thumbnail_path: Optional[str] = None
     created_at: datetime
     user_id: int
 

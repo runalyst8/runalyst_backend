@@ -155,3 +155,227 @@ WHERE runs.user_id = ?
 2026-05-19 19:31:47,845 - app.main - INFO - Runalyst Backend Refactor is starting up...
 2026-05-19 19:31:48,743 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
 2026-05-19 19:31:48,745 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 17:07:00,578 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:07:05,324 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:07:11,393 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:07:20,524 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:07:27,490 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:07:33,562 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 17:37:03,327 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:02,802 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:05,115 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:39:05,116 - app.api.endpoints.runs - INFO - Retrieved 0 runs for user 1
+2026-05-19 20:39:05,117 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:39:05,120 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:06,005 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:39:06,006 - app.api.endpoints.runs - INFO - Retrieved 2 runs for user 1
+2026-05-19 20:39:06,006 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:39:06,009 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:07,130 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:39:07,130 - app.api.endpoints.runs - INFO - Retrieved 0 runs for user 1
+2026-05-19 20:39:07,131 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:39:07,134 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:07,760 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:39:07,769 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:08,659 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:39:08,660 - app.api.endpoints.runs - INFO - Retrieved 1 runs for user 1
+2026-05-19 20:39:08,660 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:39:08,663 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:09,575 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 1
+2026-05-19 20:39:09,575 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:09,627 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:10,519 - app.services.run.service - WARNING - Run 99999 not found in database
+2026-05-19 20:39:10,520 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=99999 "HTTP/1.1 404 Not Found"
+2026-05-19 20:39:10,523 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:11,652 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 2
+2026-05-19 20:39:11,653 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:11,656 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:12,555 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:39:12,559 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:13,454 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/new-video.mp4
+2026-05-19 20:39:13,454 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:39:13,455 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:39:13,455 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:39:13,456 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:39:13,459 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:14,353 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/titled.mp4
+2026-05-19 20:39:14,353 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:39:14,354 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:39:14,354 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:39:14,354 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:39:14,357 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:15,249 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/queued.mp4
+2026-05-19 20:39:15,250 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:39:15,250 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:39:15,251 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:39:15,251 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:39:15,254 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:15,878 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:39:15,887 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:16,784 - app.api.endpoints.runs - INFO - User 1 requested a new video upload URL
+2026-05-19 20:39:16,785 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 200 OK"
+2026-05-19 20:39:16,789 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:17,674 - app.api.endpoints.runs - INFO - User 1 requested a new video upload URL
+2026-05-19 20:39:17,674 - app.services.run.service - ERROR - Supabase storage error for user 1: storage down
+Traceback (most recent call last):
+  File "/Users/cerenkaraoglan/Downloads/runalyst-backend-run/backend/app/services/run/service.py", line 23, in get_upload_url
+    video_response = supabase_client.storage.from_(video_bucket).create_signed_upload_url(
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
+    raise effect
+Exception: storage down
+2026-05-19 20:39:17,676 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 500 Internal Server Error"
+2026-05-19 20:39:17,679 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:18,290 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:39:18,298 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:19,184 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 1
+2026-05-19 20:39:19,185 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:19,191 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:20,086 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 1
+2026-05-19 20:39:20,087 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:20,096 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:21,244 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 2
+2026-05-19 20:39:21,244 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:21,248 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:22,162 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 1
+2026-05-19 20:39:22,162 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:39:22,169 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:23,069 - app.api.endpoints.runs - INFO - GPU Worker updating status for run 1 to: completed
+2026-05-19 20:39:23,069 - app.services.run.service - INFO - Service: Attempting status update for run 1 to 'completed'
+2026-05-19 20:39:23,070 - app.services.run.service - INFO - Run 1 status successfully transitioned to 'completed'
+2026-05-19 20:39:23,070 - app.api.endpoints.runs - INFO - Status successfully updated for run 1
+2026-05-19 20:39:23,071 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=1&new_status=completed "HTTP/1.1 200 OK"
+2026-05-19 20:39:23,074 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:23,974 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=1&new_status=completed "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:39:23,978 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:39:24,588 - app.api.endpoints.runs - INFO - GPU Worker updating status for run 99999 to: completed
+2026-05-19 20:39:24,589 - app.services.run.service - INFO - Service: Attempting status update for run 99999 to 'completed'
+2026-05-19 20:39:24,590 - app.services.run.service - ERROR - Update failed: Run 99999 does not exist
+2026-05-19 20:39:24,591 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=99999&new_status=completed "HTTP/1.1 404 Not Found"
+2026-05-19 17:40:49,700 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:14,251 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:16,063 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:41:16,064 - app.api.endpoints.runs - INFO - Retrieved 0 runs for user 1
+2026-05-19 20:41:16,065 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:41:16,068 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:16,986 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:41:16,986 - app.api.endpoints.runs - INFO - Retrieved 2 runs for user 1
+2026-05-19 20:41:16,987 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:41:16,990 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:18,140 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:41:18,141 - app.api.endpoints.runs - INFO - Retrieved 0 runs for user 1
+2026-05-19 20:41:18,142 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:41:18,145 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:18,795 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:18,804 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:19,710 - app.api.endpoints.runs - INFO - Fetching all runs for user 1
+2026-05-19 20:41:19,711 - app.api.endpoints.runs - INFO - Retrieved 1 runs for user 1
+2026-05-19 20:41:19,711 - httpx - INFO - HTTP Request: GET http://testserver/runs/all "HTTP/1.1 200 OK"
+2026-05-19 20:41:19,715 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:20,622 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 200 OK"
+2026-05-19 20:41:20,625 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:21,542 - app.services.run.service - WARNING - Run 99999 not found in database
+2026-05-19 20:41:21,542 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=99999 "HTTP/1.1 404 Not Found"
+2026-05-19 20:41:21,545 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:22,692 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 2
+2026-05-19 20:41:22,693 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:41:22,696 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:23,609 - httpx - INFO - HTTP Request: GET http://testserver/runs/get?run_id=1 "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:23,613 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:24,532 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/new-video.mp4
+2026-05-19 20:41:24,532 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:41:24,533 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:41:24,533 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:41:24,534 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:41:24,537 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:25,512 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/titled.mp4
+2026-05-19 20:41:25,512 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:41:25,513 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:41:25,513 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:41:25,514 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:41:25,517 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:26,430 - app.api.endpoints.runs - INFO - Creating run record for user 1 with video: 1/queued.mp4
+2026-05-19 20:41:26,430 - app.services.run.service - INFO - Initiating run record creation for user 1
+2026-05-19 20:41:26,431 - app.services.run.service - INFO - Sending run 1 to SQS queue
+2026-05-19 20:41:26,431 - app.api.endpoints.runs - INFO - Run 1 successfully created and queued for user 1
+2026-05-19 20:41:26,432 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 201 Created"
+2026-05-19 20:41:26,435 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:27,092 - httpx - INFO - HTTP Request: POST http://testserver/runs/create-record "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:27,101 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:28,025 - app.api.endpoints.runs - INFO - User 1 requested a new video upload URL
+2026-05-19 20:41:28,025 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 200 OK"
+2026-05-19 20:41:28,028 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:28,938 - app.api.endpoints.runs - INFO - User 1 requested a new video upload URL
+2026-05-19 20:41:28,938 - app.services.run.service - ERROR - Supabase storage error for user 1: storage down
+Traceback (most recent call last):
+  File "/Users/cerenkaraoglan/Downloads/runalyst-backend-run/backend/app/services/run/service.py", line 23, in get_upload_url
+    video_response = supabase_client.storage.from_(video_bucket).create_signed_upload_url(
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
+    raise effect
+Exception: storage down
+2026-05-19 20:41:28,940 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 500 Internal Server Error"
+2026-05-19 20:41:28,944 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:29,585 - httpx - INFO - HTTP Request: POST http://testserver/runs/upload-url "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:29,592 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:30,508 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 404 Not Found"
+2026-05-19 20:41:30,511 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:31,443 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 200 OK"
+2026-05-19 20:41:31,447 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:32,597 - app.services.run.service - WARNING - Unauthorized access attempt: User 1 requested run 1 owned by 2
+2026-05-19 20:41:32,597 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 403 Forbidden"
+2026-05-19 20:41:32,601 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:33,551 - app.services.run.service - ERROR - Failed to get thumbnail download URL for 1/thumb.jpg: storage error
+Traceback (most recent call last):
+  File "/Users/cerenkaraoglan/Downloads/runalyst-backend-run/backend/app/services/run/service.py", line 52, in get_thumbnail_download_url
+    response = supabase_client.storage.from_(bucket_name).create_signed_url(
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1114, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1118, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/Users/cerenkaraoglan/miniforge3/lib/python3.10/unittest/mock.py", line 1173, in _execute_mock_call
+    raise effect
+Exception: storage error
+2026-05-19 20:41:33,551 - httpx - INFO - HTTP Request: GET http://testserver/runs/thumbnail-url?run_id=1 "HTTP/1.1 500 Internal Server Error"
+2026-05-19 20:41:33,555 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:34,472 - app.api.endpoints.runs - INFO - GPU Worker updating status for run 1 to: completed
+2026-05-19 20:41:34,472 - app.services.run.service - INFO - Service: Attempting status update for run 1 to 'completed'
+2026-05-19 20:41:34,474 - app.services.run.service - INFO - Run 1 status successfully transitioned to 'completed'
+2026-05-19 20:41:34,474 - app.api.endpoints.runs - INFO - Status successfully updated for run 1
+2026-05-19 20:41:34,474 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=1&new_status=completed "HTTP/1.1 200 OK"
+2026-05-19 20:41:34,477 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:35,437 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=1&new_status=completed "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:35,441 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:36,090 - app.api.endpoints.runs - INFO - GPU Worker updating status for run 99999 to: completed
+2026-05-19 20:41:36,090 - app.services.run.service - INFO - Service: Attempting status update for run 99999 to 'completed'
+2026-05-19 20:41:36,092 - app.services.run.service - ERROR - Update failed: Run 99999 does not exist
+2026-05-19 20:41:36,093 - httpx - INFO - HTTP Request: PATCH http://testserver/runs/update-status?run_id=99999&new_status=completed "HTTP/1.1 404 Not Found"
+2026-05-19 20:41:42,306 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:44,431 - httpx - INFO - HTTP Request: POST http://testserver/auth/refresh "HTTP/1.1 200 OK"
+2026-05-19 20:41:44,434 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:45,044 - httpx - INFO - HTTP Request: POST http://testserver/auth/refresh "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:45,054 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:45,920 - httpx - INFO - HTTP Request: POST http://testserver/auth/refresh "HTTP/1.1 200 OK"
+2026-05-19 20:41:45,922 - httpx - INFO - HTTP Request: POST http://testserver/auth/refresh "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:45,925 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:46,821 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 20:41:46,825 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:47,679 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 20:41:47,683 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:48,613 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:48,616 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:49,219 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:49,228 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:50,107 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 20:41:50,109 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 401 Unauthorized"
+2026-05-19 20:41:50,112 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 20:41:50,983 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 20:41:50,985 - httpx - INFO - HTTP Request: GET http://testserver/users/me "HTTP/1.1 200 OK"
+2026-05-19 17:50:52,870 - app.main - INFO - Runalyst Backend Refactor is starting up...
+2026-05-19 18:10:20,080 - app.main - INFO - Runalyst Backend Refactor is starting up...

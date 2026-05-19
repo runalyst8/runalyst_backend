@@ -14,18 +14,28 @@ logger = logging.getLogger(__name__)
 
 
 def get_upload_url(*, user_id: int):
-    bucket_name = "user_videos_test"
+    video_bucket = "user_videos_test"
+    thumbnail_bucket = "user_thumbnails_test"
     unique_filename = f"{user_id}/{uuid.uuid4()}.mp4"
 
     try:
-        logger.debug(f"Generating signed upload URL for user {user_id} at path {unique_filename}")
-        response = supabase_client.storage.from_(bucket_name).create_signed_upload_url(
+        logger.debug(f"Generating signed upload URLs for user {user_id} at path {unique_filename}")
+        video_response = supabase_client.storage.from_(video_bucket).create_signed_upload_url(
+            path=unique_filename
+        )
+        thumbnail_response = supabase_client.storage.from_(thumbnail_bucket).create_signed_upload_url(
             path=unique_filename
         )
 
         return {
-            "upload_url": response['signed_url'],
-            "path": response['path']
+            "video": {
+                "upload_url": video_response['signed_url'],
+                "path": video_response['path'],
+            },
+            "thumbnail": {
+                "upload_url": thumbnail_response['signed_url'],
+                "path": thumbnail_response['path'],
+            },
         }
 
     except Exception as e:
@@ -36,6 +46,22 @@ def get_upload_url(*, user_id: int):
         )
 
 
+def get_thumbnail_download_url(*, thumbnail_path: str) -> str:
+    bucket_name = "user_thumbnails_test"
+    try:
+        response = supabase_client.storage.from_(bucket_name).create_signed_url(
+            path=thumbnail_path,
+            expires_in=3600
+        )
+        return response['signedURL']
+    except Exception as e:
+        logger.error(f"Failed to get thumbnail download URL for {thumbnail_path}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate thumbnail URL"
+        )
+
+
 def create_run_record(db: Session, *, user_id: int, payload: RunCreateIn):
     try:
         logger.info(f"Initiating run record creation for user {user_id}")
@@ -43,6 +69,7 @@ def create_run_record(db: Session, *, user_id: int, payload: RunCreateIn):
             db,
             user_id=user_id,
             video_path=payload.video_path,
+            thumbnail_path=payload.video_path,
             status="queued",
             title=payload.title
         )
@@ -78,7 +105,7 @@ def get_run_details(db: Session, *, run_id: int, user_id: int):
         logger.warning(f"Run {run_id} not found in database")
         raise HTTPException(status_code=404, detail="Run not found")
 
-    if run.user_id != user_id:
+    if run.user_id != int(user_id):
         logger.warning(f"Unauthorized access attempt: User {user_id} requested run {run_id} owned by {run.user_id}")
         raise HTTPException(status_code=403, detail="Access denied")
 

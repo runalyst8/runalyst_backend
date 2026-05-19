@@ -13,10 +13,11 @@ def get_multi_by_owner(db: Session, *, user_id: int, skip: int = 0, limit: int =
         .all()
     )
 
-def create_run(db: Session, *, user_id: int, video_path: str, status: str, title: str | None = None) -> Run:
+def create_run(db: Session, *, user_id: int, video_path: str, status: str, title: str | None = None, thumbnail_path: str | None = None) -> Run:
     db_obj = Run(
         user_id=user_id,
         video_path=video_path,
+        thumbnail_path=thumbnail_path,
         status=status,
         title=title
     )

@@ -14,6 +14,7 @@ class Run(Base):
 
     #path of the video in Supabase Storage, e.g., "user-id/uuid.mp4"
     video_path = Column(String, nullable=False, unique=True)
+    thumbnail_path = Column(String, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

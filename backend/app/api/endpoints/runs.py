@@ -45,6 +45,20 @@ def get_all_runs(
     logger.info(f"Retrieved {len(runs.runs)} runs for user {user_id}")
     return runs
 
+@router.get("/thumbnail-url")
+def get_run_thumbnail_url(
+    run_id: int,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id)
+):
+    run = run_service.get_run_details(db, run_id=run_id, user_id=user_id)
+    if not run.thumbnail_path:
+        from fastapi import HTTPException as _HTTP
+        raise _HTTP(status_code=404, detail="No thumbnail for this run")
+    url = run_service.get_thumbnail_download_url(thumbnail_path=run.thumbnail_path)
+    return {"url": url}
+
+
 @router.patch("/update-status", response_model=RunOut)
 def update_status(
     run_id: int,
