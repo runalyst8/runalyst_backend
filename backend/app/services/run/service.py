@@ -15,16 +15,18 @@ logger = logging.getLogger(__name__)
 
 def get_upload_url(*, user_id: int):
     video_bucket = "user_videos_test"
-    thumbnail_bucket = "user_thumbnails_test"
-    unique_filename = f"{user_id}/{uuid.uuid4()}.mp4"
+    thumbnail_bucket = "video_thumbnails"
+    shared_uuid = uuid.uuid4()
+    unique_video_filename = f"{user_id}/{shared_uuid}.mp4"
+    unique_thumbnail_filename = f"{user_id}/{shared_uuid}.jpg"
 
     try:
-        logger.debug(f"Generating signed upload URLs for user {user_id} at path {unique_filename}")
+        logger.debug(f"Generating signed upload URLs for user {user_id} at path {unique_video_filename}")
         video_response = supabase_client.storage.from_(video_bucket).create_signed_upload_url(
-            path=unique_filename
+            path=unique_video_filename
         )
         thumbnail_response = supabase_client.storage.from_(thumbnail_bucket).create_signed_upload_url(
-            path=unique_filename
+            path=unique_thumbnail_filename
         )
 
         return {
@@ -47,7 +49,7 @@ def get_upload_url(*, user_id: int):
 
 
 def get_thumbnail_download_url(*, thumbnail_path: str) -> str:
-    bucket_name = "user_thumbnails_test"
+    bucket_name = "video_thumbnails"
     try:
         response = supabase_client.storage.from_(bucket_name).create_signed_url(
             path=thumbnail_path,
@@ -65,11 +67,13 @@ def get_thumbnail_download_url(*, thumbnail_path: str) -> str:
 def create_run_record(db: Session, *, user_id: int, payload: RunCreateIn):
     try:
         logger.info(f"Initiating run record creation for user {user_id}")
+        video_path = payload.video_path
+        thumbnail_path = video_path[:-4] + ".jpg" if video_path.endswith(".mp4") else video_path + ".jpg"
         new_run = crud_run.create_run(
             db,
             user_id=user_id,
-            video_path=payload.video_path,
-            thumbnail_path=payload.video_path,
+            video_path=video_path,
+            thumbnail_path=thumbnail_path,
             status="queued",
             title=payload.title
         )

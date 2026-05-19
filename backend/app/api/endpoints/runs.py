@@ -52,8 +52,11 @@ def get_run_thumbnail_url(
     user_id: int = Depends(get_current_user_id)
 ):
     run = run_service.get_run_details(db, run_id=run_id, user_id=user_id)
-    # Fall back to video_path if thumbnail_path is not set — both share the same UUID path
-    thumbnail_path = run.thumbnail_path or run.video_path
+    # Fall back to deriving thumbnail path from video_path (.mp4 → .jpg) for older runs
+    thumbnail_path = run.thumbnail_path
+    if not thumbnail_path and run.video_path:
+        vp = run.video_path
+        thumbnail_path = vp[:-4] + ".jpg" if vp.endswith(".mp4") else vp + ".jpg"
     if not thumbnail_path:
         from fastapi import HTTPException as _HTTP
         raise _HTTP(status_code=404, detail="No thumbnail for this run")
