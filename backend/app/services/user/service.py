@@ -58,6 +58,11 @@ def update_user_account(db: Session, *, user_id: int, payload: UserUpdateIn) -> 
     update_data = payload.model_dump(exclude_unset=True)
 
     if "password" in update_data:
+        if len(update_data["password"]) < 8:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password must be at least 8 characters"
+            )
         if len(update_data["password"].encode('utf-8')) > 72:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
