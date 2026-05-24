@@ -71,6 +71,7 @@ def authenticate_user(db: Session, *, payload: SignUpIn) -> Token:
     return tokens
 
 
+
 def process_google_auth(db: Session, token: str) -> Token:
     info = verify_google_id_token(token)
 
